@@ -1,0 +1,314 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encryptor - Secure Encryption Tool</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'main/style.css' %}">   
+    
+    <script>
+        // Передача статусу автентифікації для script.js
+        const isAuthenticated = "{% if user.is_authenticated %}true{% else %}false{% endif %}" === "true";
+    </script>
+</head>
+<body class="bg-primary text-white">
+
+{% include "main/modal.html" %} 
+
+<input type="hidden" id="csrfToken" value="{{ csrf_token }}"> 
+
+<header id="header" class="bg-secondary border-b border-gray-700/30 sticky top-0 z-50 backdrop-blur-sm">
+    <div class="container mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-toxic/10 p-2 rounded-lg border border-toxic/20">
+                    <i class="fas fa-shield-alt text-toxic text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white">Encryptor</h1>
+            </div>
+            
+            <nav class="hidden lg:flex items-center space-x-8">
+                <a href="{% url 'home' %}" class="text-white hover:text-toxic transition-colors font-medium">Home</a>
+                
+                <a href="{% url 'settings_page' %}" class="text-steel hover:text-toxic transition-colors font-medium header-settings-btn">Settings</a>
+                
+                {% if user.is_authenticated %}
+                    <span class="text-steel">Welcome, {{ user.username }}</span>
+                    <a href="{% url 'logout' %}" class="text-steel hover:text-toxic transition-colors font-medium">Sign Out</a>
+                {% else %}
+                    <a href="{% url 'auth_view' %}?mode=signin" class="text-steel hover:text-toxic transition-colors font-medium">Sign In</a>
+                    <a href="{% url 'auth_view' %}?mode=signup" class="bg-toxic text-black px-4 py-2 rounded-lg font-bold hover:bg-toxic/90 transition-all glow-green-hover">Sign Up</a>
+                {% endif %}
+            </nav>
+            
+            <div class="flex items-center space-x-4">
+                <button id="mobileMenuBtn" class="lg:hidden text-steel hover:text-toxic">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div id="mobileMenu" class="modal">
+    <div class="modal-content">
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center space-x-3">
+                <div class="bg-toxic/10 p-2 rounded-lg border border-toxic/20">
+                    <i class="fas fa-shield-alt text-toxic text-xl"></i>
+                </div>
+                <span class="text-white font-bold text-xl">Encryptor</span>
+            </div>
+            <button id="closeMobileMenu" class="text-steel hover:text-toxic">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        
+        <nav class="space-y-6">
+            <a href="{% url 'home' %}" class="block text-white hover:text-toxic transition-colors font-medium text-lg">Home</a>
+            <a href="{% url 'settings_page' %}" class="block text-steel hover:text-toxic transition-colors font-medium text-lg">Settings</a>
+            {% if user.is_authenticated %}
+                <span class="block text-steel text-lg">Welcome, {{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="block text-steel hover:text-toxic transition-colors font-medium text-lg">Sign Out</a>
+            {% else %}
+                <a href="{% url 'auth_view' %}?mode=signin" class="block text-steel hover:text-toxic transition-colors font-medium text-lg">Sign In</a>
+                <a href="{% url 'auth_view' %}?mode=signup" class="block bg-toxic text-black px-6 py-3 rounded-lg font-bold hover:bg-toxic/90 transition-all w-full text-center mt-4 glow-green-hover">Sign Up</a>
+            {% endif %}
+        </nav>
+    </div>
+</div>
+
+<section id="hero" class="bg-primary py-20 relative overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-br from-toxic/5 via-transparent to-accent/5"></div>
+    <div class="container mx-auto px-6 text-center relative z-10">
+        <div class="max-w-4xl mx-auto">
+            <h1 class="text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                Encrypt & Decrypt
+                <span class="block text-toxic">Instantly and Securely</span>
+            </h1>
+            <p class="text-xl text-steel mb-8 max-w-2xl mx-auto leading-relaxed">
+                Military-grade encryption algorithms with real-time processing. Secure your data with AES-256 encryption.
+            </p>
+            
+            {% if not user.is_authenticated %}
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'auth_view' %}?mode=signin" class="bg-toxic hover:bg-toxic/90 text-black font-semibold px-8 py-4 rounded-lg glow-green-hover transition-all transform hover:scale-105">
+                    <i class="fas fa-sign-in-alt mr-2"></i>
+                    Sign In
+                </a>
+                <a href="{% url 'auth_view' %}?mode=signup" class="bg-accent hover:bg-accent/90 text-white font-semibold px-8 py-4 rounded-lg transition-all transform hover:scale-105">
+                    <i class="fas fa-user-plus mr-2"></i>
+                    Create Account
+                </a>
+                <button id="demoBtn" class="bg-secondary border border-steel/30 text-white font-semibold px-8 py-4 rounded-lg hover:border-toxic transition-all transform hover:scale-105">
+                    <i class="fas fa-play mr-2"></i>
+                    Try Demo
+                </button>
+            </div>
+            {% else %}
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#main-tools" class="bg-toxic hover:bg-toxic/90 text-black font-semibold px-8 py-4 rounded-lg glow-green-hover transition-all transform hover:scale-105">
+                    <i class="fas fa-lock mr-2"></i>
+                    Start Encrypting
+                </a>
+                <a href="{% url 'settings_page' %}" class="bg-accent hover:bg-accent/90 text-white font-semibold px-8 py-4 rounded-lg transition-all transform hover:scale-105">
+                    <i class="fas fa-cog mr-2"></i>
+                    Settings
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<section id="main-tools" class="bg-primary py-16">
+    <div class="container mx-auto px-6">
+        <div class="grid lg:grid-cols-2 xl:grid-cols-3 gap-8">
+            
+            <div id="encryptor-card" class="bg-card border border-steel/20 rounded-xl p-6 hover:border-toxic/30 transition-all">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i class="fas fa-lock mr-3 text-toxic"></i>
+                        Encryptor
+                    </h2>
+                    <div class="flex items-center space-x-2 text-sm text-steel">
+                        <i class="fas fa-shield-alt text-toxic"></i>
+                        <span>AES-256</span> 
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Encryption Key</label>
+                        <div class="relative password-input-wrapper">
+                            <input type="password" id="encrypt-key" placeholder="Enter your key, e.g. secret123" 
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-white mono-font focus:border-toxic focus:outline-none transition-colors">
+                            <button class="password-toggle absolute right-3 top-1/2 transform -translate-y-1/2 text-steel hover:text-toxic">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Text to Encrypt</label>
+                        <textarea id="encrypt-text" placeholder="Enter text to encrypt..." 
+                                  class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-white resize-none h-32 focus:border-toxic focus:outline-none transition-colors"></textarea>
+                    </div>
+                    
+                    <button id="encrypt-btn" class="w-full bg-toxic hover:bg-toxic/90 text-black font-semibold py-3 rounded-lg transition-all transform hover:scale-[1.02] glow-green-hover">
+                        <i class="fas fa-lock mr-2"></i>
+                        Encrypt
+                    </button>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-steel font-medium">Encrypted Result</label>
+                            <button class="copy-btn text-steel hover:text-toxic text-sm" data-copy-target="encrypt-output" title="Copy">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div id="encrypt-output" class="bg-secondary border border-steel/30 rounded-lg px-4 py-3 mono-font text-sm text-steel min-h-[100px] flex items-center">
+                            <span class="opacity-50">Encrypted data will appear here...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="decryptor-card" class="bg-card border border-steel/20 rounded-xl p-6 hover:border-toxic/30 transition-all">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-white flex items-center">
+                        <i class="fas fa-unlock mr-3 text-accent"></i>
+                        Decryptor
+                    </h2>
+                    <div class="flex items-center space-x-2 text-sm text-steel">
+                        <i class="fas fa-shield-alt text-accent"></i>
+                        <span>AES-256</span> 
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Decryption Key</label>
+                        <div class="relative password-input-wrapper">
+                            <input type="password" id="decrypt-key" placeholder="Enter decryption key" 
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-white mono-font focus:border-accent focus:outline-none transition-colors">
+                            <button class="password-toggle absolute right-3 top-1/2 transform -translate-y-1/2 text-steel hover:text-accent">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Encrypted Text</label>
+                        <textarea id="decrypt-text" placeholder="Paste encrypted request here..." 
+                                  class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-white mono-font resize-none h-32 focus:border-accent focus:outline-none transition-colors"></textarea>
+                    </div>
+                    
+                    <button id="decrypt-btn" class="w-full bg-accent hover:bg-accent/90 text-white font-semibold py-3 rounded-lg transition-all transform hover:scale-[1.02]">
+                        <i class="fas fa-unlock mr-2"></i>
+                        Decrypt
+                    </button>
+                    
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-steel font-medium">Decrypted Result</label>
+                            <button class="copy-btn text-steel hover:text-accent text-sm" data-copy-target="decrypt-output" title="Copy">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                        <div id="decrypt-output" class="bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-sm text-steel min-h-[100px] flex items-center">
+                            <span class="opacity-50">Decrypted text will appear here...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="history-panel" class="bg-card border border-steel/20 rounded-xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-history mr-3 text-steel"></i>
+                        Recent Activity
+                    </h2>
+                    <button id="clear-history-btn" class="text-steel hover:text-red-400 text-sm">
+                        <i class="fas fa-trash mr-1"></i>
+                        Clear
+                    </button>
+                </div>
+                
+                <button id="quick-demo" class="w-full mb-4 bg-toxic hover:bg-toxic/90 text-black font-semibold py-3 rounded-lg transition-all glow-green-hover">
+                    <i class="fas fa-bolt mr-2"></i>
+                    Quick Demo
+                </button>
+                
+                <div id="history-list" class="space-y-3 max-h-96 overflow-y-auto">
+                    <div id="historyPlaceholder" class="text-center text-steel py-8">
+                        <i class="fas fa-history text-2xl mb-2"></i>
+                        <p>No recent activity</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-secondary border-t border-steel/20 py-8">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col lg:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-4 lg:mb-0">
+                <div class="bg-toxic/10 p-2 rounded-lg border border-toxic/20">
+                    <i class="fas fa-shield-alt text-toxic"></i>
+                </div>
+                <span class="text-white font-bold">Encryptor</span>
+            </div>
+            
+            <div class="flex space-x-6 text-steel">
+                <a href="#" class="hover:text-toxic transition-colors">Privacy</a>
+                <a href="#" class="hover:text-toxic transition-colors">Terms</a>
+                <a href="#" class="hover:text-toxic transition-colors">Support</a>
+            </div>
+            
+            <div class="flex space-x-4 mt-4 lg:mt-0">
+                <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-github"></i></a>
+                <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-discord"></i></a>
+            </div>
+        </div>
+        
+        <div class="text-center mt-6 text-steel text-sm">
+            <p>© 2025 Encryptor. All rights reserved. Built with security in mind.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'primary': '#071428',
+                    'secondary': '#0E2433',
+                    'card': '#122433',
+                    'steel': '#6B7A8F',
+                    'toxic': '#39FF14',
+                    'accent': '#00A8E8',
+                    'light-bg': '#E6EEF3'
+                },
+                fontFamily: {
+                    'inter': ['Inter', 'sans-serif'],
+                    'mono': ['JetBrains Mono', 'monospace']
+                }
+            }
+        }
+    }
+</script>
+<script src="{% static 'main/script.js' %}"></script>
+
+</body>
+</html>

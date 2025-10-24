@@ -1,0 +1,233 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if signup_mode %}Sign Up{% else %}Sign In{% endif %} - Encryptor</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'main/style.css' %}">
+    
+    <script>
+        // Передача статусу автентифікації для script.js
+        const isAuthenticated = "{% if user.is_authenticated %}true{% else %}false{% endif %}" === "true";
+    </script>
+</head>
+<body class="bg-primary text-white font-inter">
+
+{% include "main/modal.html" %}
+
+<header id="header" class="bg-secondary border-b border-gray-700/30 sticky top-0 z-50 backdrop-blur-sm">
+    <div class="container mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-toxic/10 p-2 rounded-lg border border-toxic/20">
+                    <i class="fas fa-shield-alt text-toxic text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-white">Encryptor</h1>
+            </div>
+            
+            <nav class="hidden lg:flex items-center space-x-8">
+                <a href="{% url 'home' %}" class="text-steel hover:text-toxic transition-colors font-medium">Home</a>
+                <a href="{% url 'settings_page' %}" class="text-steel hover:text-toxic transition-colors font-medium">Settings</a>
+                <a href="{% url 'auth_view' %}?mode=signin" class="{% if not signup_mode %}text-white{% else %}text-steel{% endif %} hover:text-toxic transition-colors font-medium">Sign In</a>
+                <a href="{% url 'auth_view' %}?mode=signup" class="{% if signup_mode %}bg-toxic text-black px-4 py-2 rounded-lg font-bold hover:bg-toxic/90 transition-all glow-green-hover{% else %}text-steel{% endif %}">Sign Up</a>
+            </nav>
+            
+            <div class="flex items-center space-x-4">
+                <button class="lg:hidden text-steel hover:text-toxic">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="min-h-screen flex items-center justify-center py-12">
+    <div class="container mx-auto px-6">
+        <div class="max-w-md mx-auto">
+            <div class="text-center mb-8">
+                <div class="bg-toxic/10 p-4 rounded-2xl border border-toxic/20 inline-block mb-6">
+                    <i class="fas fa-shield-alt text-toxic text-4xl"></i>
+                </div>
+                <h1 class="text-3xl font-bold text-white mb-2">{% if signup_mode %}Create Account{% else %}Welcome Back{% endif %}</h1>
+                <p class="text-steel">{% if signup_mode %}Sign up to start protecting your data{% else %}Sign in to your Encryptor account{% endif %}</p>
+            </div>
+
+            <div class="bg-card border border-steel/20 rounded-xl p-8">
+                {% if error %}
+                <div class="bg-red-500/10 border border-red-500/30 rounded-lg p-4 mb-6">
+                    <div class="flex items-center space-x-3">
+                        <i class="fas fa-exclamation-triangle text-red-500"></i>
+                        <span class="text-white">{{ error }}</span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="POST" action="{% url 'auth_view' %}" class="space-y-6" {% if signup_mode %}style="display:none"{% endif %}>
+                    {% csrf_token %}
+                    <input type="hidden" name="signin" value="true">
+                    
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Username</label>
+                        <div class="relative">
+                            <input type="text" name="username" placeholder="Enter your username" required
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 pl-11 text-white focus:border-toxic focus:outline-none transition-colors">
+                            <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-steel"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Password</label>
+                        <div class="relative password-input-wrapper">
+                            <input type="password" name="password" placeholder="Enter your password" required
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 pl-11 text-white focus:border-toxic focus:outline-none transition-colors">
+                            <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-steel"></i>
+                            <button type="button" class="password-toggle absolute right-4 top-1/2 transform -translate-y-1/2 text-steel hover:text-toxic">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center space-x-2">
+                            <input type="checkbox" class="rounded border-steel/30 bg-secondary text-toxic focus:ring-toxic">
+                            <span class="text-steel text-sm">Remember me</span>
+                        </label>
+                        <a href="#" class="text-toxic hover:text-toxic/80 text-sm font-medium">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="w-full bg-toxic text-black py-3 rounded-lg font-bold hover:bg-toxic/90 transition-all transform hover:scale-[1.02] glow-green-hover">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <form method="POST" action="{% url 'auth_view' %}" class="space-y-6" {% if not signup_mode %}style="display:none"{% endif %}>
+                    {% csrf_token %}
+                    <input type="hidden" name="signup" value="true">
+
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Username</label>
+                        <div class="relative">
+                            <input type="text" name="username" placeholder="Choose a username" required
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 pl-11 text-white focus:border-toxic focus:outline-none transition-colors">
+                            <i class="fas fa-user absolute left-4 top-1/2 transform -translate-y-1/2 text-steel"></i>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Email</label>
+                        <div class="relative">
+                            <input type="email" name="email" placeholder="Enter your email (optional)"
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 pl-11 text-white focus:border-toxic focus:outline-none transition-colors">
+                            <i class="fas fa-envelope absolute left-4 top-1/2 transform -translate-y-1/2 text-steel"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Password</label>
+                        <div class="relative password-input-wrapper">
+                            <input type="password" name="password" placeholder="Create password (min 8 chars)" required
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 pl-11 text-white focus:border-toxic focus:outline-none transition-colors">
+                            <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-steel"></i>
+                            <button type="button" class="password-toggle absolute right-4 top-1/2 transform -translate-y-1/2 text-steel hover:text-toxic">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-steel font-medium mb-2">Confirm Password</label>
+                        <div class="relative password-input-wrapper">
+                            <input type="password" name="confirm_password" placeholder="Confirm your password" required
+                                   class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 pl-11 text-white focus:border-toxic focus:outline-none transition-colors">
+                            <i class="fas fa-lock absolute left-4 top-1/2 transform -translate-y-1/2 text-steel"></i>
+                            <button type="button" class="password-toggle absolute right-4 top-1/2 transform -translate-y-1/2 text-steel hover:text-toxic">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-toxic text-black py-3 rounded-lg font-bold hover:bg-toxic/90 transition-all transform hover:scale-[1.02] glow-green-hover">
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Sign Up
+                    </button>
+                </form>
+
+
+                <div class="text-center mt-6 pt-6 border-t border-steel/20">
+                    {% if signup_mode %}
+                        <p class="text-steel">
+                            Already have an account?
+                            <a href="{% url 'auth_view' %}?mode=signin" class="text-toxic hover:text-toxic/80 font-medium">Sign In</a>
+                        </p>
+                    {% else %}
+                        <p class="text-steel">
+                            Don't have an account?
+                            <a href="{% url 'auth_view' %}?mode=signup" class="text-toxic hover:text-toxic/80 font-medium">Sign up</a>
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="bg-secondary border-t border-steel/20 py-8">
+    <div class="container mx-auto px-6">
+        <div class="flex flex-col lg:flex-row justify-between items-center">
+            <div class="flex items-center space-x-3 mb-4 lg:mb-0">
+                <div class="bg-toxic/10 p-2 rounded-lg border border-toxic/20">
+                    <i class="fas fa-shield-alt text-toxic"></i>
+                </div>
+                <span class="text-white font-bold">Encryptor</span>
+            </div>
+            
+            <div class="flex space-x-6 text-steel">
+                <a href="#" class="hover:text-toxic transition-colors">Privacy</a>
+                <a href="#" class="hover:text-toxic transition-colors">Terms</a>
+                <a href="#" class="hover:text-toxic transition-colors">Support</a>
+            </div>
+            
+            <div class="flex space-x-4 mt-4 lg:mt-0">
+                <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-github"></i></a>
+                <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-discord"></i></a>
+            </div>
+        </div>
+        
+        <div class="text-center mt-6 text-steel text-sm">
+            <p>© 2025 Encryptor. All rights reserved. Built with security in mind.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    'primary': '#071428',
+                    'secondary': '#0E2433',
+                    'card': '#122433',
+                    'steel': '#6B7A8F',
+                    'toxic': '#39FF14',
+                    'accent': '#00A8E8',
+                },
+                fontFamily: {
+                    'inter': ['Inter', 'sans-serif'],
+                    'mono': ['JetBrains Mono', 'monospace']
+                }
+            }
+        }
+    }
+</script>
+<script src="{% static 'main/script.js' %}"></script>
+
+</body>
+</html>

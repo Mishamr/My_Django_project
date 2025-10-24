@@ -1,0 +1,257 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - Encryptor</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script> window.FontAwesomeConfig = { autoReplaceSvg: 'nest'};</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'main/style.css' %}">
+
+    <script>
+        // Передача статусу автентифікації для script.js
+        const isAuthenticated = "{% if user.is_authenticated %}true{% else %}false{% endif %}" === "true";
+    </script>
+    
+</head>
+<body class="bg-primary text-white font-inter">
+    
+    {% include "main/modal.html" %} 
+
+    <header id="header" class="bg-secondary border-b border-gray-700/30 sticky top-0 z-50 backdrop-blur-sm">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-toxic/10 p-2 rounded-lg border border-toxic/20">
+                        <i class="fas fa-shield-alt text-toxic text-xl"></i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white">Encryptor</h1>
+                </div>
+                
+                <nav class="hidden lg:flex items-center space-x-8">
+                    <a href="{% url 'home' %}" class="text-steel hover:text-toxic transition-colors font-medium">Home</a>
+                    <a href="{% url 'api_get_settings' %}" class="text-white hover:text-toxic transition-colors font-medium">Settings</a>
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="text-steel hover:text-toxic transition-colors font-medium">Sign Out</a>
+                    {% else %}
+                        <a href="{% url 'auth_view' %}?mode=signin" class="text-steel hover:text-toxic transition-colors font-medium">Sign In</a>
+                    {% endif %}
+                </nav>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="hidden lg:flex items-center space-x-2 bg-card border border-steel/20 hover:border-toxic/50 px-4 py-2 rounded-lg transition-all">
+                        <i class="fas fa-key text-steel text-sm"></i>
+                        <span class="text-steel text-sm font-medium">API Key</span>
+                    </button>
+                    <button class="lg:hidden text-steel hover:text-toxic">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="min-h-screen py-12">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-12">
+                    <h1 class="text-4xl font-bold text-white mb-4">Settings</h1>
+                    <p class="text-steel text-lg">Manage your encryption preferences and account settings</p>
+                </div>
+
+                <div class="grid gap-8">
+                    <div class="bg-card border border-steel/20 rounded-xl p-6">
+                        <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                            <i class="fas fa-shield-alt text-toxic"></i>
+                            Security Settings
+                        </h2>
+                        
+                        <div class="space-y-6">
+                            <div class="grid md:grid-cols-2 gap-6">
+                                <div>
+                                    <label for="encryption-algorithm" class="block text-steel font-medium mb-3">Encryption Algorithm</label>
+                                    <select id="encryption-algorithm" class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-white focus:border-toxic focus:outline-none">
+                                        <option value="aes-256">AES-256 (Recommended)</option>
+                                        <option value="chacha20">ChaCha20</option>
+                                        <option value="twofish">Twofish</option>
+                                        <option value="serpent">Serpent</option>
+                                    </select>
+                                </div>
+                                
+                                <div>
+                                    <label for="key-derivation" class="block text-steel font-medium mb-3">Key Derivation</label>
+                                    <select id="key-derivation" class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-white focus:border-toxic focus:outline-none">
+                                        <option value="pbkdf2">PBKDF2-SHA256</option>
+                                        <option value="argon2">Argon2</option>
+                                        <option value="scrypt">Scrypt</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <label class="flex items-center justify-between p-4 bg-secondary rounded-lg border border-steel/20">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-eraser text-toxic"></i>
+                                        <span class="text-white">Auto-clear input after operation</span>
+                                    </div>
+                                    <input type="checkbox" id="auto-clear" class="rounded border-steel/30 bg-card text-toxic focus:ring-toxic" checked>
+                                </label>
+                                
+                                <label class="flex items-center justify-between p-4 bg-secondary rounded-lg border border-steel/20">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-memory text-toxic"></i>
+                                        <span class="text-white">Secure memory wipe (client-side)</span>
+                                    </div>
+                                    <input type="checkbox" id="secure-wipe" class="rounded border-steel/30 bg-card text-toxic focus:ring-toxic" checked>
+                                </label>
+                                
+                                <label class="flex items-center justify-between p-4 bg-secondary rounded-lg border border-steel/20">
+                                    <div class="flex items-center space-x-3">
+                                        <i class="fas fa-clipboard-list text-toxic"></i>
+                                        <span class="text-white">Enable audit trail (log all API calls)</span>
+                                    </div>
+                                    <input type="checkbox" id="audit-trail" class="rounded border-steel/30 bg-card text-toxic focus:ring-toxic">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card border border-steel/20 rounded-xl p-6">
+                        <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                            <i class="fas fa-palette text-accent"></i>
+                            Appearance
+                        </h2>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-steel font-medium mb-3">Theme</label>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <button data-theme="dark" class="theme-btn py-4 px-6 bg-toxic text-black rounded-xl font-bold border-2 border-toxic hover:scale-105 transition-all">
+                                        <i class="fas fa-moon mr-2"></i>
+                                        Dark
+                                    </button>
+                                    <button data-theme="light" class="theme-btn py-4 px-6 bg-secondary text-steel border-2 border-steel/30 rounded-xl hover:border-toxic hover:text-white transition-all">
+                                        <i class="fas fa-sun mr-2"></i>
+                                        Light
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-steel font-medium mb-3">Font Size</label>
+                                <div class="flex gap-2">
+                                    <button data-font-size="small" class="font-size-btn flex-1 py-3 bg-secondary border border-steel/30 rounded-lg text-steel hover:border-toxic hover:text-white">Small</button>
+                                    <button data-font-size="medium" class="font-size-btn flex-1 py-3 bg-toxic border border-toxic text-black rounded-lg font-bold">Medium</button>
+                                    <button data-font-size="large" class="font-size-btn flex-1 py-3 bg-secondary border border-steel/30 rounded-lg text-steel hover:border-toxic hover:text-white">Large</button>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label for="language" class="block text-steel font-medium mb-3">Language</label>
+                                <select id="language" class="w-full bg-secondary border border-steel/30 rounded-lg px-4 py-3 text-white focus:border-toxic focus:outline-none">
+                                    <option value="en">English</option>
+                                    <option value="ua">Українська</option>
+                                    <option value="es">Español</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-card border border-red-500/20 rounded-xl p-6">
+                        <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                            <i class="fas fa-exclamation-triangle text-red-500"></i>
+                            Danger Zone
+                        </h2>
+                        
+                        <div class="space-y-4">
+                            <button id="clearHistorySettings" class="w-full flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-all">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-trash text-red-500"></i>
+                                    <span class="text-white">Clear All History</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-red-500"></i>
+                            </button>
+                            
+                            <button class="w-full flex items-center justify-between p-4 bg-red-500/10 border border-red-500/30 rounded-lg hover:bg-red-500/20 transition-all">
+                                <div class="flex items-center space-x-3">
+                                    <i class="fas fa-user-slash text-red-500"></i>
+                                    <span class="text-white">Delete Account</span>
+                                </div>
+                                <i class="fas fa-chevron-right text-red-500"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-12">
+                    <button id="saveSettings" class="flex-1 bg-toxic text-black py-4 rounded-xl font-bold hover:bg-toxic/90 transition-all">
+                        <i class="fas fa-save mr-2"></i>
+                        Save Changes
+                    </button>
+                    <a href="{% url 'home' %}" class="flex-1 bg-secondary border border-steel/30 text-white py-4 rounded-xl font-bold hover:border-toxic transition-all text-center">
+                        <i class="fas fa-times mr-2"></i>
+                        Cancel
+                    </a>
+                </div>
+                <input type="hidden" id="csrfToken" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-secondary border-t border-steel/20 py-8">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col lg:flex-row justify-between items-center">
+                <div class="flex items-center space-x-3 mb-4 lg:mb-0">
+                    <div class="bg-toxic/10 p-2 rounded-lg border border-toxic/20">
+                        <i class="fas fa-shield-alt text-toxic"></i>
+                    </div>
+                    <span class="text-white font-bold">Encryptor</span>
+                </div>
+                
+                <div class="flex space-x-6 text-steel">
+                    <a href="#" class="hover:text-toxic transition-colors">Privacy</a>
+                    <a href="#" class="hover:text-toxic transition-colors">Terms</a>
+                    <a href="#" class="hover:text-toxic transition-colors">Support</a>
+                </div>
+                
+                <div class="flex space-x-4 mt-4 lg:mt-0">
+                    <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-github"></i></a>
+                    <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-steel hover:text-toxic transition-colors"><i class="fab fa-discord"></i></a>
+                </div>
+            </div>
+            
+            <div class="text-center mt-6 text-steel text-sm">
+                <p>© 2025 Encryptor. All rights reserved. Built with security in mind.</p>
+            </div>
+        </div>
+    </footer>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#071428',
+                        'secondary': '#0E2433',
+                        'card': '#122433',
+                        'steel': '#6B7A8F',
+                        'toxic': '#39FF14',
+                        'accent': '#00A8E8',
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'mono': ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="{% static 'main/script.js' %}"></script>
+    
+</body>
+</html>
